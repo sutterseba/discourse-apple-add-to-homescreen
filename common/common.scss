@@ -1,0 +1,26 @@
+.add-to-homescreen-outlet {
+  padding: 1em 1.75em 1.5em;
+  background-color: var(--secondary);
+  z-index: 999;
+  position: sticky;
+  bottom: 0;
+  opacity: 0;
+  visibility: hidden;
+  display: none;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  text-align: center;
+  &__button {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  &__logo a {
+    color: var(--primary);
+  }
+}
+
+.add-to-homescreen-outlet:has(> .show) {
+  opacity: 1;
+  visibility: visible;
+  display: block;
+}
