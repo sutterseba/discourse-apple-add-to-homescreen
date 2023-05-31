@@ -14,24 +14,46 @@ export default class AddToHomescreen extends Component {
   @service site;
   @tracked hasHiddenPopup;
   @tracked showPopupTimer = false;
+  @tracked arrowUp = !window.matchMedia("(orientation: portrait)");
 
   constructor() {
     super(...arguments);
     this.hasHiddenPopup = this.keyValueStore.getItem("hasHiddenPopup");
+
     later(() => {
       this.showPopupTimer = true;
     }, 1000);
+
+    if (this.capabilities.isIpadOS) {
+      this.arrowUp = true;
+      return;
+    }
+
+    window.matchMedia("(orientation: portrait)").addEventListener("change", e => {
+      const portrait = e.matches;
+
+      if (this.capabilities.isIpadOS) {
+        this.arrowUp = true;
+        return;
+      } else if (portrait) {
+          this.arrowUp = false;
+      } else {
+          this.arrowUp = true;
+      }
+  });
   }
 
   get shouldRender() {
     const appleMobile = this.capabilities.isIOS || this.capabilities.isIpadOS;
     const isPWA = this.capabilities.isPwa;
+    const isHub = this.capabilities.wasLaunchedFromDiscourseHub;
     return (
       this.currentUser &&
-      !this.hasHiddenPopup &&
       this.showPopupTimer &&
       appleMobile &&
-      !isPWA
+      !this.hasHiddenPopup &&
+      !isPWA &&
+      !isHub
     );
   }
 
