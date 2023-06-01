@@ -17,6 +17,10 @@
   &__logo a {
     color: var(--primary);
   }
+
+  #site-logo {
+    max-width: calc(100% / 4);
+  }
 }
 
 .add-to-homescreen-outlet:has(> .show) {
