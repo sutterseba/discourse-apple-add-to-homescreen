@@ -1,71 +1,88 @@
 import Component from "@glimmer/component";
-import { classNameBindings } from "@ember-decorators/component";
 import { inject as service } from "@ember/service";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
 import { later } from "@ember/runloop";
 import I18n from "I18n";
+import discourseLater from "discourse-common/lib/later";
+import { bind } from "discourse-common/utils/decorators";
 
-@classNameBindings("shouldRender:show")
 export default class AddToHomescreen extends Component {
   @service capabilities;
   @service currentUser;
   @service keyValueStore;
   @service site;
-  @tracked hasHiddenPopup;
+
+  @tracked hasHiddenPopup = this.keyValueStore.getItem("hasHiddenPopup");
   @tracked showPopupTimer = false;
-  @tracked arrowUp = !window.matchMedia("(orientation: portrait)");
+  @tracked arrowUp = window.matchMedia("(orientation: landscape)").matches;
+  @tracked animate = false;
 
   constructor() {
     super(...arguments);
-    this.hasHiddenPopup = this.keyValueStore.getItem("hasHiddenPopup");
 
-    later(() => {
-      this.showPopupTimer = true;
-    }, 1000);
-
-    if (this.capabilities.isIpadOS) {
-      this.arrowUp = true;
-      return;
-    }
-
-    window.matchMedia("(orientation: portrait)").addEventListener("change", e => {
-      const portrait = e.matches;
-
-      if (this.capabilities.isIpadOS) {
-        this.arrowUp = true;
+    discourseLater(() => {
+      if (this.isDestroying || this.isDestroyed) {
         return;
-      } else if (portrait) {
-          this.arrowUp = false;
-      } else {
-          this.arrowUp = true;
       }
-  });
+
+      this.showPopupTimer = true;
+    }, settings.popup_timer);
   }
 
   get shouldRender() {
     const appleMobile = this.capabilities.isIOS || this.capabilities.isIpadOS;
     const isPWA = this.capabilities.isPwa;
     const isHub = this.capabilities.wasLaunchedFromDiscourseHub;
-    return (
+
+    if (
       this.currentUser &&
       this.showPopupTimer &&
       appleMobile &&
       !this.hasHiddenPopup &&
       !isPWA &&
       !isHub
-    );
+    ) {
+      discourseLater(() => {
+        this.animate = true;
+      }, 125);
+      return true;
+    }
   }
 
   get PWALabel() {
     return I18n.t(themePrefix("pwa_text"), {
-      siteTitle: this.site.siteSettings.title
+      siteTitle: this.site.siteSettings.title,
     });
+  }
+
+  @action
+  setup() {
+    if (this.capabilities.isIpadOS) {
+      this.arrowUp = true;
+      return;
+    }
+
+    window
+      .matchMedia("(orientation: landscape)")
+      .addEventListener("change", this.handleOrientationChange);
+  }
+
+  @action
+  teardown() {
+    window
+      .matchMedia("(orientation: landscape)")
+      .removeEventListener("change", this.handleOrientationChange);
   }
 
   @action
   hidePopup() {
     this.keyValueStore.setItem("hasHiddenPopup", true);
     this.hasHiddenPopup = true;
+  }
+
+  @bind
+  handleOrientationChange(event) {
+    this.arrowUp = event.matches;
   }
 }
