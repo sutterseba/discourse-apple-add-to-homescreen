@@ -1,9 +1,22 @@
 {{#if this.shouldRender}}
-  <DButton @action={{action "hidePopup"}} @icon="times" @class="add-to-homescreen-outlet__button btn-flat" />
-  <div class="add-to-homescreen {{if this.showPopupTimer 'show'}}">
-    <MountWidget @widget="home-logo" @class="add-to-homescreen-outlet__logo"/>
+  <DButton
+    @action={{this.hidePopup}}
+    @icon="times"
+    class="add-to-homescreen-outlet__button btn-flat"
+  />
+  <div
+    {{did-insert this.setup}}
+    {{will-destroy this.teardown}}
+    class={{concat-class "add-to-homescreen" (if this.showPopupTimer "show")}}
+  >
+    <MountWidget @widget="home-logo" @class="add-to-homescreen-outlet__logo" />
     <span class="add-to-homescreen__description">
-      {{html-safe this.PWALabel}} {{#if this.arrowUp}}{{d-icon "arrow-up"}}{{else}}{{d-icon "arrow-down"}}{{/if}}
+      {{html-safe this.PWALabel}}
+      {{#if this.arrowUp}}
+        {{d-icon "arrow-up"}}
+      {{else}}
+        {{d-icon "arrow-down"}}
+      {{/if}}
     </span>
   </div>
 {{/if}}
