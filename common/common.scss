@@ -1,6 +1,7 @@
 .add-to-homescreen-outlet {
   padding: 1em 1.75em 1.5em;
-  background-color: var(--secondary);
+  background-color: var(--header_background);
+  color: var(--header_primary);
   z-index: 999;
   position: sticky;
   bottom: 0;
@@ -16,7 +17,7 @@
     top: 0;
   }
   #site-logo {
-    max-width: calc(100% / 4);
+    max-width: 35%;
   }
   .text-logo {
     color: var(--primary);
